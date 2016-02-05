@@ -12,7 +12,7 @@
 {%- macro firstPublicIP(addrlist) -%}
   {%- set printed = false -%}
   {%- for ip in addrlist -%}
-    {%- if not printed and not (salt['network.ip_in_subnet'](ip, '10.0.0.0/8') or salt['network.ip_in_subnet'](ip, '172.16.0.0/12') or salt['network.ip_in_subnet'](ip, '192.168.0.0/16')) -%}
+    {%- if not printed and not salt['network.is_private'](ip) -%}
       {{ ip }}
       {%- set printed = true -%}
     {%- endif -%}
