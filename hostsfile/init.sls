@@ -9,6 +9,16 @@
 #    - eth1
 #  mine_interval: 2
 
+{%- macro firstPublicIP(addrlist) -%}
+  {%- set printed = false -%}
+  {%- for ip in addrlist -%}
+    {%- if not printed and not (salt['network.ip_in_subnet'](ip, '10.0.0.0/8') or salt['network.ip_in_subnet'](ip, '172.16.0.0/12') or salt['network.ip_in_subnet'](ip, '192.168.0.0/16')) -%}
+      {{ ip }}
+      {%- set printed = true -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endmacro -%}
+
 {%- set addrs = salt['mine.get']('*', 'network.ip_addrs') %}
 
 {%- if addrs is defined %}
@@ -18,7 +28,7 @@
 {%- set short_name = name.split('.') | first %}
 {{ name }}-host-entry:
   host.present:
-    - ip: {{ addrlist|first() }}
+    - ip: {{ firstPublicIP(addrlist) }}
     - names:
       - {{ name }}
 {%- if short_name != name and salt['pillar.get']('hostsfile:generate_shortname', True) %}
@@ -28,4 +38,3 @@
 {% endfor %}
 
 {% endif %}
-
